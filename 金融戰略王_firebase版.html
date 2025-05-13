@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>金融戰略王</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; max-width: 800px; margin: auto; }
+    .hidden { display: none; }
+    input { margin: 0.3em 0; width: 40px; }
+    button { margin-top: 1em; }
+    table, td, th { border: 1px solid #999; border-collapse: collapse; padding: 4px; }
+    #cardBox { border: 1px solid #ccc; padding: 1em; margin-top: 1em; }
+    #name, #id { width: 150px; font-size: 1.1em; }
+  </style>
+</head>
+<body>
+<h1>金融戰略王</h1>
+
+<div id="startSection">
+  <p>請輸入學生資料：</p>
+  <input id="name" placeholder="姓名" /><br />
+  <input id="id" placeholder="學號" /><br />
+  <button onclick="startGame()">開始遊戲</button>
+</div>
+
+<div id="gameSection" class="hidden">
+  <p>學生：<span id="studentInfo"></span></p>
+  <p>目前回合：<span id="roundCount">1</span> / 5</p>
+  <button onclick="drawCard()">抽卡</button>
+  <div id="cardBox" class="hidden">
+    <h3 id="cardTitle"></h3>
+    <p id="cardDesc"></p>
+    <p>請輸入 S/B/X/C/R 加權（正負數、總合最多為 10）：</p>
+    <label>S: <input id="inputS" type="number" min="-10" max="10" /></label>
+    <label>B: <input id="inputB" type="number" min="-10" max="10" /></label>
+    <label>X: <input id="inputX" type="number" min="-10" max="10" /></label>
+    <label>C: <input id="inputC" type="number" min="-10" max="10" /></label>
+    <label>R: <input id="inputR" type="number" min="-10" max="10" /></label><br />
+    <button id="confirmBtn" onclick="confirmTurn()">確定</button>
+  </div>
+  <p id="result"></p>
+  <p>總分：<span id="totalScore">0</span></p>
+  <h3>回合紀錄：</h3>
+  <ul id="logList"></ul>
+  <button onclick="restartGame()">重新開始</button>
+  <button onclick="showAdmin()">老師後台</button>
+</div>
+
+<div id="adminSection" class="hidden">
+  <h2>老師後台</h2>
+  <button onclick="exportCSV()">下載 CSV</button>
+  <button onclick="hideAdmin()">返回遊戲畫面</button>
+  <div id="recordTable"></div>
+</div>
+
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDM6EGkFIqDXRVSHr9GXG_PPV8R3ViI5dQ",
+    authDomain: "financial-strategy-game.firebaseapp.com",
+    projectId: "financial-strategy-game",
+    storageBucket: "financial-strategy-game.appspot.com",
+    messagingSenderId: "13202865051",
+    appId: "1:13202865051:web:d25f5067d1212e51ee3f3e",
+    measurementId: "G-1094R03925"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+
+<!-- 遊戲邏輯（略，實際中可替換為完整邏輯） -->
+<script>
+  function saveToLocal() {
+    const timestamp = new Date().toLocaleString();
+    const record = {
+      name: student.name,
+      id: student.id,
+      total: totalScore,
+      logs: logs.map(l => `第${l.round}回合: ${l.cardTitle}（${l.score}分）`),
+      time: timestamp
+    };
+    db.collection("records").add(record)
+      .then(() => console.log("✅ 已成功寫入 Firebase"))
+      .catch((error) => console.error("❌ Firebase 寫入失敗：", error));
+    const localData = JSON.parse(localStorage.getItem("records") || "[]");
+    localData.push(record);
+    localStorage.setItem("records", JSON.stringify(localData));
+  }
+</script>
+
+</body>
+</html>
